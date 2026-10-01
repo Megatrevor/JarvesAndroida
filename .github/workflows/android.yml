@@ -3,19 +3,31 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download Portuguese Vosk model
+        run: |
+          mkdir -p app/src/main/assets
+          curl -L --fail --retry 3 -o /tmp/vosk-pt.zip https://alphacephei.com/vosk/models/vosk-model-small-pt-0.3.zip
+          unzip -q /tmp/vosk-pt.zip -d app/src/main/assets
+          test -d app/src/main/assets/vosk-model-small-pt-0.3
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.13'
-      - run: gradle assembleDebug
+          gradle-version: '9.6.0'
+
+      - run: gradle assembleDebug --stacktrace
+
       - uses: actions/upload-artifact@v4
         with:
           name: Jarves-debug-apk
