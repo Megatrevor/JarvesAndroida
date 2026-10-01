@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Jarves</string>
+    <string name="accessibility_service_description">Jarves pode executar ações de acessibilidade autorizadas pelo usuário.</string>
+</resources>
