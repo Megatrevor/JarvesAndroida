@@ -2,13 +2,13 @@ plugins { id 'com.android.application' }
 
 android {
     namespace 'com.jarves.android'
-    compileSdk 37
+    compileSdk 36
     defaultConfig {
         applicationId 'com.jarves.android'
         minSdk 26
-        targetSdk 37
-        versionCode 4
-        versionName '0.4.0'
+        targetSdk 36
+        versionCode 5
+        versionName '0.4.1'
     }
 }
 
