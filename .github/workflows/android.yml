@@ -1,4 +1,8 @@
 name: Build Jarves APK
+concurrency:
+  group: jarves-android-build
+  cancel-in-progress: true
+
 on:
   push:
     branches: [ main ]
