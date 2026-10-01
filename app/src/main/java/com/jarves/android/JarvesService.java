@@ -2,6 +2,7 @@ package com.jarves.android;
 
 import android.app.*;
 import android.content.*;
+import android.content.pm.ServiceInfo;
 import android.media.*;
 import android.os.*;
 import android.provider.Settings;
