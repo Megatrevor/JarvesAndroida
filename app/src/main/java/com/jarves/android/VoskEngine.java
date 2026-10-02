@@ -8,6 +8,7 @@ import android.media.MediaRecorder;
 import org.vosk.Model;
 import org.vosk.Recognizer;
 import java.io.*;
+import org.json.JSONObject;
 
 public final class VoskEngine {
     public interface Listener { void onText(String text); void onStatus(String status); void onError(Exception e); }
@@ -27,7 +28,7 @@ public final class VoskEngine {
                 listener.onStatus("Modelo carregado. Ativando microfone...");
                 int min=AudioRecord.getMinBufferSize(16000,AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT);
                 int buffer=Math.max(min,4096);
-                recorder=new AudioRecord(MediaRecorder.AudioSource.MIC,16000,AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT,buffer*2);
+                recorder=new AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION,16000,AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT,buffer*2);
                 recognizer=new Recognizer(model,16000.0f);
                 if (recorder.getState() != AudioRecord.STATE_INITIALIZED) throw new IllegalStateException("Microfone indisponível");
                 recorder.startRecording();
@@ -39,8 +40,8 @@ public final class VoskEngine {
                     if(n>0) {
                         boolean finalResult=recognizer.acceptWaveForm(data,n);
                         String json=finalResult ? recognizer.getResult() : recognizer.getPartialResult();
-                        String text=extractText(json);
-                        if(!text.isEmpty()) listener.onText(text);
+                        String text=extractText(json, finalResult);
+                        if(!text.isEmpty() && (finalResult || text.toLowerCase(java.util.Locale.ROOT).contains("jarves") || text.toLowerCase(java.util.Locale.ROOT).contains("jarvis"))) listener.onText(text);
                     }
                 }
             } catch(Exception e){ listener.onError(e); } finally { stopInternal(); }
