@@ -68,6 +68,16 @@ public class MainActivity extends Activity {
             requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSIONS);
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode != PERMISSIONS || grantResults.length == 0) return;
+        if (Manifest.permission.RECORD_AUDIO.equals(permissions[0]) &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            activate();
+        }
+    }
+
     private void requestPhone() {
         if (checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED)
             requestPermissions(new String[]{Manifest.permission.CALL_PHONE}, PERMISSIONS);
