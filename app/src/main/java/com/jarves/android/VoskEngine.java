@@ -50,7 +50,7 @@ public final class VoskEngine {
     }
     public void stop(){ running=false; if(recorder!=null) try{recorder.stop();}catch(Exception ignored){} }
     private void stopInternal(){ running=false; if(recorder!=null){try{recorder.stop();}catch(Exception ignored){} recorder.release();recorder=null;} if(recognizer!=null){recognizer.close();recognizer=null;} if(model!=null){model.close();model=null;} }
-    private String extractText(String json){int p=json.indexOf("\"text\"");if(p<0)return "";int c=json.indexOf(':',p);int q1=json.indexOf('"',c+1);int q2=json.indexOf('"',q1+1);return q1>=0&&q2>q1?json.substring(q1+1,q2):"";}
+    private String extractText(String json, boolean finalResult){String key=finalResult?"\"text\"":"\"partial\"";int p=json.indexOf(key);if(p<0)return "";int col=json.indexOf(':',p);int q1=json.indexOf('\"',col+1);int q2=json.indexOf('\"',q1+1);return q1>=0&&q2>q1?json.substring(q1+1,q2):"";}
     private File copyAssetTree(String root)throws IOException{File out=new File(context.getFilesDir(),root);if(out.exists())return out;copyDir(context.getAssets(),root,out);return out;}
     private void copyDir(AssetManager a,String path,File dest)throws IOException{String[] children=a.list(path);if(children==null||children.length==0){dest.getParentFile().mkdirs();try(InputStream in=a.open(path);OutputStream out=new FileOutputStream(dest)){byte[] b=new byte[8192];int n;while((n=in.read(b))!=-1)out.write(b,0,n);}return;}dest.mkdirs();for(String child:children)copyDir(a,path+"/"+child,new File(dest,child));}
 }
