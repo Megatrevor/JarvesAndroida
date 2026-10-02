@@ -10,7 +10,7 @@ import org.vosk.Recognizer;
 import java.io.*;
 
 public final class VoskEngine {
-    public interface Listener { void onText(String text); void onError(Exception e); }
+    public interface Listener { void onText(String text); void onStatus(String status); void onError(Exception e); }
     private final Context context; private final Listener listener;
     private volatile boolean running; private Thread thread;
     private Model model; private Recognizer recognizer; private AudioRecord recorder;
@@ -21,14 +21,28 @@ public final class VoskEngine {
         if (running) return; running=true;
         thread=new Thread(() -> {
             try {
+                listener.onStatus("Carregando modelo de português...");
                 File modelDir=copyAssetTree("vosk-model-small-pt-0.3");
                 model=new Model(modelDir.getAbsolutePath());
+                listener.onStatus("Modelo carregado. Ativando microfone...");
                 int min=AudioRecord.getMinBufferSize(16000,AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT);
                 int buffer=Math.max(min,4096);
                 recorder=new AudioRecord(MediaRecorder.AudioSource.MIC,16000,AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT,buffer*2);
-                recognizer=new Recognizer(model,16000.0f); recorder.startRecording();
+                recognizer=new Recognizer(model,16000.0f);
+                if (recorder.getState() != AudioRecord.STATE_INITIALIZED) throw new IllegalStateException("Microfone indisponível");
+                recorder.startRecording();
+                if (recorder.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) throw new IllegalStateException("Gravação do microfone não iniciou");
+                listener.onStatus("JARVES ouvindo. Diga Jarves.");
                 byte[] data=new byte[buffer];
-                while(running){ int n=recorder.read(data,0,data.length); if(n>0 && recognizer.acceptWaveForm(data,n)){ String text=extractText(recognizer.getResult()); if(!text.isEmpty()) listener.onText(text); } }
+                while(running){
+                    int n=recorder.read(data,0,data.length);
+                    if(n>0) {
+                        boolean finalResult=recognizer.acceptWaveForm(data,n);
+                        String json=finalResult ? recognizer.getResult() : recognizer.getPartialResult();
+                        String text=extractText(json);
+                        if(!text.isEmpty()) listener.onText(text);
+                    }
+                }
             } catch(Exception e){ listener.onError(e); } finally { stopInternal(); }
         },"Jarves-Vosk");
         thread.start();
